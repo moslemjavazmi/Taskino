@@ -1,0 +1,11 @@
+flowchart LR
+    P["Producer service"] -->|publish event| T[("Kafka topic")]
+    T --> C["Consumer service"]
+    C --> V{"Event valid?"}
+    V -->|yes| H["Handle event"]
+    H --> D["Persist result"]
+    V -->|no| E["Reject / log / route to DLQ if configured"]
+    H --> R{"Processing succeeded?"}
+    R -->|yes| ACK["Commit / acknowledge according to client strategy"]
+    R -->|no| RETRY["Retry according to configured policy"]
+    RETRY --> C

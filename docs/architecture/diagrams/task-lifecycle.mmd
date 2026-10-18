@@ -1,0 +1,19 @@
+stateDiagram-v2
+    [*] --> PENDING_APPROVAL: task submitted
+    PENDING_APPROVAL --> APPROVED: admin approves
+    PENDING_APPROVAL --> CANCELLED: rejected or cancelled
+    APPROVED --> OFFERING: task made available
+    OFFERING --> CUSTOMER_SELECTED: customer selects an offer
+    CUSTOMER_SELECTED --> TASKER_ACCEPTED: provider accepts
+    TASKER_ACCEPTED --> READY_TO_START: prerequisites satisfied
+    READY_TO_START --> IN_PROGRESS: work starts
+    IN_PROGRESS --> COMPLETED: work completed
+    APPROVED --> CANCELLED
+    OFFERING --> CANCELLED
+    CUSTOMER_SELECTED --> CANCELLED
+    TASKER_ACCEPTED --> CANCELLED
+    READY_TO_START --> CANCELLED
+    IN_PROGRESS --> FAILED: work cannot be completed
+    COMPLETED --> [*]
+    CANCELLED --> [*]
+    FAILED --> [*]

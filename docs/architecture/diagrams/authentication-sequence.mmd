@@ -1,0 +1,18 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant App as Frontend app
+    participant Gateway as API Gateway
+    participant Auth as Auth service
+    participant Store as Session/token store
+
+    User->>App: Request sign-in
+    App->>Gateway: Start authentication
+    Gateway->>Auth: Forward request
+    Auth->>Auth: Validate request and OTP flow
+    Auth->>Store: Persist session/token state if applicable
+    Auth-->>Gateway: Authentication result
+    Gateway-->>App: Response
+    App-->>User: Signed-in state
+
+    Note over App,Store: Verify exact token, cookie, session and refresh behavior in code.

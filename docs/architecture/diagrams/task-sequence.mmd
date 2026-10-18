@@ -1,0 +1,25 @@
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant Gateway as API Gateway
+    participant Task as Task Service
+    participant Kafka
+    participant Search as Search Service
+    participant Offer as Offer Service
+
+    Customer->>Gateway: Submit task request
+    Gateway->>Task: Forward authenticated request
+    Task->>Task: Validate and persist task
+    Task-->>Gateway: Creation result
+    Gateway-->>Customer: HTTP response
+
+    opt If task-created event is implemented
+      Task->>Kafka: Publish task-created event
+      Kafka-->>Search: Deliver event
+      Search->>Search: Index or match task
+      opt If matching event and offer consumer exist
+        Search->>Kafka: Publish matching result
+        Kafka-->>Offer: Deliver matching result
+        Offer->>Offer: Create or prepare offers
+      end
+    end

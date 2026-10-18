@@ -1,0 +1,34 @@
+flowchart TB
+    subgraph Clients["Presentation layer"]
+      U["Customer app<br/>Next.js + TypeScript"]
+      P["Provider app<br/>Next.js + TypeScript"]
+      A["Admin app<br/>Next.js + TypeScript"]
+    end
+    subgraph Edge["Entry layer"]
+      N["Nginx reverse proxy"]
+      G["API Gateway"]
+    end
+    subgraph Services["Backend capabilities"]
+      AUTH["Authentication"]
+      USER["User and profile"]
+      TASK["Task lifecycle"]
+      OFFER["Offers"]
+      SEARCH["Search and matching"]
+      REVIEW["Reviews and ratings"]
+    end
+    K[("Kafka event bus")]
+    U --> N
+    P --> N
+    A --> N
+    N --> G
+    G --> AUTH
+    G --> USER
+    G --> TASK
+    G --> OFFER
+    G --> SEARCH
+    G --> REVIEW
+    AUTH -. "if integrated" .-> K
+    USER -. "if integrated" .-> K
+    TASK -. "if integrated" .-> K
+    OFFER -. "if integrated" .-> K
+    SEARCH -. "if integrated" .-> K
