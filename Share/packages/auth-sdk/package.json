@@ -1,0 +1,14 @@
+{
+  "name": "@packages/auth-sdk",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+   "dependencies": {
+    "@packages/api-client": "workspace:*",
+    "@packages/types": "workspace:*"
+  },
+  "scripts": {
+    "dev": "tsc --watch --noEmit"
+  }
+}

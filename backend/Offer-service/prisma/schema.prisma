@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum OutboxStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model TaskOffer {
+  id               String      @id @default(uuid())
+  taskId           String
+  taskerId         String
+  price            Int
+  estimatedMinutes Int?
+  message          String?
+  status           OfferStatus @default(PENDING)
+  createdAt        DateTime    @default(now())
+
+  @@index([taskId])
+  @@index([taskerId])
+}
+
+model OutboxEvent {
+  id          String       @id @default(uuid())
+  aggregateId String
+  aggregate   String       // "offers"
+  type        String
+  payload     Json
+  status      OutboxStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  sentAt      DateTime?
+}
+
+// Projection از تسک (فقط برای خواندن)
+model TaskProjection {
+  id          String   @id
+  userId      String
+  title       String
+  category    String?
+  description String?
+  budget      Int?
+  location    String?
+  status      String   // وضعیت به صورت رشته
+  approved    Boolean  @default(false)
+  scheduledAt DateTime?
+  createdAt   DateTime
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([category])
+}

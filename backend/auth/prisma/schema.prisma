@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  USER
+  TASKER
+  ADMIN
+  SUPPORT
+}
+
+model User {
+  id              String           @id @default(uuid())
+  mobile          String           @unique
+  verified        Boolean          @default(false)
+  otpCode         String?
+  otpExpiresAt    DateTime?
+  otpAttempts     Int              @default(0)
+  otpBlockedUntil DateTime?
+  refreshTokens   RefreshToken[]
+  roles           UserRole[]      
+  trustedDevices  TrustedDevice[] 
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  loginRiskEvents LoginRiskEvent[]
+  mfaSecret       MfaSecret?
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        RoleName         @unique
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
+
+model RefreshToken {
+  id              String    @id @default(uuid())
+  tokenHash       String
+  fingerprintHash String
+  ip              String
+  userAgent       String
+  expiresAt       DateTime
+  revoked         Boolean   @default(false)
+  revokedAt       DateTime?
+  reuseDetected   Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Permission {
+  id    String           @id @default(uuid())
+  name  String           @unique
+  roles RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+model TrustedDevice {
+  id         String   @id @default(cuid())
+  userId     String
+  deviceHash String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deviceHash])
+}
+
+model LoginRiskEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  ip        String?
+  country   String?
+  device    String?
+  riskScore Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MfaSecret {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  secret      String
+  enabled     Boolean  @default(false)
+  backupCodes String[]
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

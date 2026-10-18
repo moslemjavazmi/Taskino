@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model Review {
+
+  id String @id @default(uuid())
+
+  taskId String
+
+  reviewerId String
+
+  revieweeId String
+
+  score Int
+
+  comment String?
+
+  createdAt DateTime @default(now())
+
+  @@index([revieweeId])
+}
+model Rating {
+  id        String   @id @default(uuid())
+  taskId    String   @unique
+  raterId   String
+  rateeId   String
+  score     Int
+  comment   String?
+  createdAt DateTime @default(now())
+}
+
+model OutboxEvent {
+  id          String   @id @default(uuid())
+  aggregateId String
+  aggregate   String
+  type        String
+  payload     Json
+  status      OutboxStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+  sentAt      DateTime?
+}
+
+enum OutboxStatus {
+  PENDING
+  SENT
+  FAILED
+}
+model TaskSnapshot {
+  taskId    String  @id
+  status    String
+  ownerId   String
+  taskerId  String?
+  updatedAt DateTime @updatedAt
+}
+model RatingAbuseCounter {
+  id        String   @id @default(uuid())
+  raterId   String
+  rateeId   String
+  count     Int
+  window    String
+  expiresAt DateTime
+
+  @@unique([raterId, rateeId, window], name: "raterId_rateeId_window")
+  @@index([raterId, window])
+}
+
+model RatingFlag {
+  id       String @id @default(uuid())
+  raterId String
+  rateeId String
+  reason  String
+  createdAt DateTime @default(now())
+}
+model RatingPenalty {
+  id        String   @id @default(uuid())
+  raterId  String
+  rateeId  String
+  factor   Float
+  reason   String
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([rateeId])
+}

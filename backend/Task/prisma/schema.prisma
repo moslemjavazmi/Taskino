@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TaskStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  OFFERING
+  CUSTOMER_SELECTED
+  TASKER_ACCEPTED
+  READY_TO_START
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  FAILED
+}
+
+enum OutboxStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  category    String?
+  budget      Int?
+  description String?
+  location    String?
+  locationLat Float?
+  locationLng Float?
+  scheduledAt DateTime?
+  status      TaskStatus @default(APPROVED)
+  approvedAt  DateTime?
+  approvedByAdminId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignments TaskAssignment[]
+  events      TaskEvent[]
+}
+
+model TaskAssignment {
+  id         String   @id @default(uuid())
+  taskId     String
+  taskerId   String
+  assignedAt DateTime @default(now())
+  acceptedAt DateTime?
+  startedAt  DateTime?
+  finishedAt DateTime?
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, taskerId])
+}
+
+model TaskEvent {
+  id        String   @id @default(uuid())
+  taskId    String
+  type      String
+  payload   Json
+  createdAt DateTime @default(now())
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model OutboxEvent {
+  id          String       @id @default(uuid())
+  aggregateId String
+  aggregate   String       // "tasks" یا "offers"
+  type        String
+  payload     Json
+  status      OutboxStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  sentAt      DateTime?
+}
+
+model TaskCancellation {
+  id        String @id @default(uuid())
+  taskId    String
+  actorId   String
+  actorType String
+  reason    String
+  createdAt DateTime @default(now())
+}
+
+// مدل TaskOffer از اینجا حذف شد (به Offer Service منتقل شد)

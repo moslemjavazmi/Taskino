@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model UserProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  name        String?
+  avatarUrl   String?
+  bio         String?
+  locationLat  Float?          // latitude
+  locationLng  Float?          // longitude
+  rating      Float    @default(0)
+  ratingCount Int      @default(0)
+  completedTasks Int @default(0)
+  cancelledTasks Int @default(0)
+  acceptanceRate Float @default(100)
+  address     String?
+  taskerProfile TaskerProfile?
+  skills        TaskerSkill[]
+  verifications Verification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TaskerProfile {
+  id            String       @id @default(uuid())
+  userProfile   UserProfile  @relation(fields: [userProfileId], references: [id])
+  userProfileId String       @unique
+  isActive      Boolean      @default(false)
+  hourlyRate    Int?
+  serviceAreas  String[]
+  locationLat   Float?       // optional: tasker location for search
+  locationLng   Float?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Skill {
+  id      String        @id @default(uuid())
+  name    String        @unique
+  icon    String?
+  taskers TaskerSkill[]
+}
+
+model TaskerSkill {
+  id            String      @id @default(uuid())
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id])
+  userProfileId String
+
+  skill   Skill  @relation(fields: [skillId], references: [id])
+  skillId String
+
+  level Int @default(1)
+}
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Verification {
+  id               String             @id @default(uuid())
+  userProfileId    String
+  type             String
+  documentUrl      String?
+  status           VerificationStatus @default(PENDING)
+  reviewedAt       DateTime?
+  reviewedBy       String?
+  rejectionReason  String?
+  createdAt        DateTime           @default(now())
+  userProfile      UserProfile        @relation(fields: [userProfileId], references: [id])
+  @@index([status])
+  @@index([userProfileId])
+}
+model OutboxEvent {
+  id          String   @id @default(uuid())
+  aggregateId String
+  aggregate   String
+  type        String
+  payload     Json
+  status      OutboxStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+  sentAt      DateTime?
+}
+
+enum OutboxStatus {
+  PENDING
+  SENT
+  FAILED
+}

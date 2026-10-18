@@ -1,0 +1,26 @@
+# backend/auth/Dockerfile.dev
+FROM node:20-alpine AS dev
+
+WORKDIR /app
+
+# نصب ابزارهای ضروری در صورت نیاز (برای برخی سرویس‌ها مثل prisma)
+RUN apk add --no-cache openssl
+
+# کپی package.json و package-lock.json برای کش لایه‌ها
+COPY package*.json ./
+
+# نصب همه وابستگی‌ها (شامل dev)
+RUN npm install
+
+# کپی فایل‌های پیکربندی TypeScript و Prisma (در صورت وجود)
+COPY tsconfig.json ./
+
+
+# کپی بقیه کدها (متعاقباً با volume mount overwrite می‌شود)
+COPY . .
+
+# پورت داخلی که سرویس روی آن گوش می‌دهد (مطابق کد شما)
+EXPOSE 8005
+
+# دستور اجرا در توسعه – معمولاً "dev" script شامل nodemon یا ts-node-dev است
+CMD ["npm", "run", "dev"]

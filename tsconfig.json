@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    { "path": "share/packages/auth-sdk" },
+    { "path": "share/packages/auth-store" },
+    { "path": "share/packages/api-client" }
+  ]
+}

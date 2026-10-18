@@ -1,0 +1,1 @@
+export const authRoute = process.env.AUTH_ROUTE || "http://localhost:8000/api/auth";

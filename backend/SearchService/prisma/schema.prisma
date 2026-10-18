@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model TaskSearch {
+  id String @id
+
+  userId String
+
+  title String
+
+  category String?
+  budget Int?
+
+  description String?
+
+  location String?
+
+  locationLat Float?
+  locationLng Float?
+
+  status String?
+
+  approved Boolean @default(false)
+
+  scheduledAt DateTime?
+
+  createdAt DateTime
+}
+model TaskerSearch {
+  id        String   @id
+  userId    String   @unique
+
+  fullName  String?
+
+  skills    String
+
+  rating    Float    @default(0)
+
+  city      String?
+
+  lat       Float?
+
+  lng       Float?
+
+  isOnline  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([skills])
+  @@index([city])
+  @@index([rating])
+}
